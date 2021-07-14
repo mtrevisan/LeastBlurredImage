@@ -76,7 +76,17 @@ final class ImageService{
 		return image;
 	}
 
-	int[] convoluteEuclidean(final int[] pixels, final int width, final int height, final int imageType, final int[][] kernel0,
+	int[] convolute(final int[] pixels, final int width, final int height, final int imageType, final Kernel kernel){
+		if(kernel.norm == KernelNorm.NONE)
+			return convolute(pixels, width, height, imageType, kernel.kernel);
+		if(kernel.norm == KernelNorm.EUCLIDEAN)
+			return convoluteEuclidean(pixels, width, height, imageType, kernel.kernel, kernel.kernelVertical);
+		if(kernel.norm == KernelNorm.MEAN)
+			return convoluteMean(pixels, width, height, imageType, kernel.kernel, kernel.kernelVertical);
+		return null;
+	}
+
+	private int[] convoluteEuclidean(final int[] pixels, final int width, final int height, final int imageType, final int[][] kernel0,
 			final int[][] kernel1){
 		final int[] convolutedPixels1 = convolute(pixels, width, height, imageType, kernel0);
 		final int[] convolutedPixels2 = convolute(pixels, width, height, imageType, kernel1);
@@ -86,7 +96,7 @@ final class ImageService{
 		return convolutedPixels;
 	}
 
-	int[] convoluteMean(final int[] pixels, final int width, final int height, final int imageType, final int[][] kernel0,
+	private int[] convoluteMean(final int[] pixels, final int width, final int height, final int imageType, final int[][] kernel0,
 			final int[][] kernel1){
 		final int[] convolutedPixels1 = convolute(pixels, width, height, imageType, kernel0);
 		final int[] convolutedPixels2 = convolute(pixels, width, height, imageType, kernel1);
@@ -96,7 +106,7 @@ final class ImageService{
 		return convolutedPixels;
 	}
 
-	int[] convolute(final int[] pixels, final int width, final int height, final int imageType, final int[][] kernel){
+	private int[] convolute(final int[] pixels, final int width, final int height, final int imageType, final int[][] kernel){
 		final int kernelWidth = kernel.length;
 		final int kernelHeight = kernel[0].length;
 

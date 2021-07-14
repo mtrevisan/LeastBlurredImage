@@ -38,68 +38,6 @@ public final class Main{
 
 	private static final ImageService IMAGE_SERVICE = ImageService.getInstance();
 
-	//Laplace
-	private static final int[][] KERNEL_LAPLACE = {
-		{0, -1, 0},
-		{-1, 4, -1},
-		{0, -1, 0}
-	};
-
-	//Laplacian gradient
-	private static final int[][] KERNEL_LAPLACIAN_GRADIENT = {
-		{1, 4, 1},
-		{4, -20, 4},
-		{1, 4, 1}
-	};
-
-	//Sobel/Tenengrad
-	//https://en.wikipedia.org/wiki/Sobel_operator
-	private static final int[][] KERNEL_SOBEL_HORIZONTAL = {
-		{1, 0, -1},
-		{2, 0, -2},
-		{1, 0, -1}
-	};
-	private static final int[][] KERNEL_SOBEL_VERTICAL = {
-		{1, 2, 1},
-		{0, 0, 0},
-		{-1, -2, -1}
-	};
-
-	//Sobel-Fieldmann
-	//https://en.wikipedia.org/wiki/Sobel_operator
-	private static final int[][] KERNEL_SOBEL_FIELDMANN_HORIZONTAL = {
-		{3, 0, -3},
-		{10, 0, -10},
-		{3, 0, -3}
-	};
-	private static final int[][] KERNEL_SOBEL_FIELDMANN_VERTICAL = {
-		{3, 10, 3},
-		{0, 0, 0},
-		{-3, -10, -3}
-	};
-
-	//Scharr
-	//https://en.wikipedia.org/wiki/Sobel_operator
-	private static final int[][] KERNEL_SCHARR_HORIZONTAL = {
-		{47, 0, -47},
-		{162, 0, -162},
-		{47, 0, -47}
-	};
-	private static final int[][] KERNEL_SCHARR_VERTICAL = {
-		{47, 162, 47},
-		{0, 0, 0},
-		{-47, -162, -47}
-	};
-
-	//Gradient (mean norm) / Brenner (euclidean norm)
-	private static final int[][] KERNEL_GRADIENT_HORIZONTAL = {
-		{-1},
-		{1}
-	};
-	private static final int[][] KERNEL_GRADIENT_VERTICAL = {
-		{-1, 1}
-	};
-
 
 	private Main(){}
 
@@ -115,19 +53,14 @@ public final class Main{
 			final int height = image.getHeight(null);
 			final int[] pixels = IMAGE_SERVICE.getPixels(image, width, height);
 			final int imageType = image.getType();
-//			final int[] convolutedPixels = IMAGE_SERVICE.convolute(pixels, width, height, imageType, KERNEL_LAPLACE);
-//			final int[] convolutedPixels = IMAGE_SERVICE.convolute(pixels, width, height, imageType, KERNEL_LAPLACIAN_GRADIENT);
-//			final int[] convolutedPixels = IMAGE_SERVICE.convoluteEuclidean(pixels, width, height, imageType, KERNEL_SOBEL_HORIZONTAL,
-//				KERNEL_SOBEL_VERTICAL);
-//			final int[] convolutedPixels = IMAGE_SERVICE.convoluteEuclidean(pixels, width, height, imageType,
-//				KERNEL_SOBEL_FIELDMANN_HORIZONTAL, KERNEL_SOBEL_FIELDMANN_VERTICAL);
-//			final int[] convolutedPixels = IMAGE_SERVICE.convoluteEuclidean(pixels, width, height, imageType, KERNEL_SCHARR_HORIZONTAL,
-//				KERNEL_SCHARR_VERTICAL);
-//			final int[] convolutedPixels = IMAGE_SERVICE.convoluteMean(pixels, width, height, imageType, KERNEL_GRADIENT_HORIZONTAL,
-//				KERNEL_GRADIENT_VERTICAL);
-			//best?
-			final int[] convolutedPixels = IMAGE_SERVICE.convoluteEuclidean(pixels, width, height, imageType, KERNEL_GRADIENT_HORIZONTAL,
-				KERNEL_GRADIENT_VERTICAL);
+//			final Kernel kernel = Kernel.LAPLACE;
+//			final Kernel kernel = Kernel.LAPLACIAN_GRADIENT;
+//			final Kernel kernel = Kernel.SOBEL_TENENGRAD;
+//			final Kernel kernel = Kernel.SOBEL_FIELDMANN;
+//			final Kernel kernel = Kernel.SCHARR;
+//			final Kernel kernel = Kernel.GRADIENT;
+			final Kernel kernel = Kernel.BRENNER;
+			final int[] convolutedPixels = IMAGE_SERVICE.convolute(pixels, width, height, imageType, kernel);
 
 			final double variance = IMAGE_SERVICE.calculateVariance(convolutedPixels);
 
