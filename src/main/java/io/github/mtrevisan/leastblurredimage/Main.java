@@ -33,32 +33,105 @@ import java.util.Map;
 //https://www.pyimagesearch.com/2015/09/07/blur-detection-with-opencv/
 //https://www.researchgate.net/publication/3887632_Diatom_autofocusing_in_brightfield_microscopy_A_comparative_study
 //https://stackoverflow.com/questions/7765810/is-there-a-way-to-detect-if-an-image-is-blurry
+//https://www.programmersought.com/article/6056166465/
 public final class Main{
 
 	private static final ImageService IMAGE_SERVICE = ImageService.getInstance();
 
-	private static final int[][] KERNEL = {
+	//Laplace
+	private static final int[][] KERNEL_LAPLACE = {
 		{0, -1, 0},
 		{-1, 4, -1},
 		{0, -1, 0}
+	};
+
+	//Laplacian gradient
+	private static final int[][] KERNEL_LAPLACIAN_GRADIENT = {
+		{1, 4, 1},
+		{4, -20, 4},
+		{1, 4, 1}
+	};
+
+	//Sobel/Tenengrad
+	//https://en.wikipedia.org/wiki/Sobel_operator
+	private static final int[][] KERNEL_SOBEL_HORIZONTAL = {
+		{1, 0, -1},
+		{2, 0, -2},
+		{1, 0, -1}
+	};
+	private static final int[][] KERNEL_SOBEL_VERTICAL = {
+		{1, 2, 1},
+		{0, 0, 0},
+		{-1, -2, -1}
+	};
+
+	//Sobel-Fieldmann
+	//https://en.wikipedia.org/wiki/Sobel_operator
+	private static final int[][] KERNEL_SOBEL_FIELDMANN_HORIZONTAL = {
+		{3, 0, -3},
+		{10, 0, -10},
+		{3, 0, -3}
+	};
+	private static final int[][] KERNEL_SOBEL_FIELDMANN_VERTICAL = {
+		{3, 10, 3},
+		{0, 0, 0},
+		{-3, -10, -3}
+	};
+
+	//Scharr
+	//https://en.wikipedia.org/wiki/Sobel_operator
+	private static final int[][] KERNEL_SCHARR_HORIZONTAL = {
+		{47, 0, -47},
+		{162, 0, -162},
+		{47, 0, -47}
+	};
+	private static final int[][] KERNEL_SCHARR_VERTICAL = {
+		{47, 162, 47},
+		{0, 0, 0},
+		{-47, -162, -47}
+	};
+
+	//Gradient (mean norm) / Brenner (euclidean norm)
+	private static final int[][] KERNEL_GRADIENT_HORIZONTAL = {
+		{-1},
+		{1}
+	};
+	private static final int[][] KERNEL_GRADIENT_VERTICAL = {
+		{-1, 1}
 	};
 
 
 	private Main(){}
 
 	public static void main(final String[] args) throws IOException{
+		System.out.println("loading " + args.length + " images");
 		final Map<String, BufferedImage> sources = loadImages(args.length > 0? args: new String[]{});
-		System.out.println("loaded " + args.length + " images");
 
 		String leastBlurredImageName = null;
 		double maximumVariance = 0.;
 		for(final Map.Entry<String, BufferedImage> element : sources.entrySet()){
 			final BufferedImage image = element.getValue();
-			final int[] convolutedPixels = IMAGE_SERVICE.applyLaplacian(image, KERNEL);
+			final int width = image.getWidth(null);
+			final int height = image.getHeight(null);
+			final int[] pixels = IMAGE_SERVICE.getPixels(image, width, height);
+			final int imageType = image.getType();
+//			final int[] convolutedPixels = IMAGE_SERVICE.convolute(pixels, width, height, imageType, KERNEL_LAPLACE);
+//			final int[] convolutedPixels = IMAGE_SERVICE.convolute(pixels, width, height, imageType, KERNEL_LAPLACIAN_GRADIENT);
+//			final int[] convolutedPixels = IMAGE_SERVICE.convoluteEuclidean(pixels, width, height, imageType, KERNEL_SOBEL_HORIZONTAL,
+//				KERNEL_SOBEL_VERTICAL);
+//			final int[] convolutedPixels = IMAGE_SERVICE.convoluteEuclidean(pixels, width, height, imageType,
+//				KERNEL_SOBEL_FIELDMANN_HORIZONTAL, KERNEL_SOBEL_FIELDMANN_VERTICAL);
+//			final int[] convolutedPixels = IMAGE_SERVICE.convoluteEuclidean(pixels, width, height, imageType, KERNEL_SCHARR_HORIZONTAL,
+//				KERNEL_SCHARR_VERTICAL);
+//			final int[] convolutedPixels = IMAGE_SERVICE.convoluteMean(pixels, width, height, imageType, KERNEL_GRADIENT_HORIZONTAL,
+//				KERNEL_GRADIENT_VERTICAL);
+			//best?
+			final int[] convolutedPixels = IMAGE_SERVICE.convoluteEuclidean(pixels, width, height, imageType, KERNEL_GRADIENT_HORIZONTAL,
+				KERNEL_GRADIENT_VERTICAL);
 
 			final double variance = IMAGE_SERVICE.calculateVariance(convolutedPixels);
 
-			System.out.println(element.getKey() + " -> " + ((int)(variance * 10) / 10));
+			System.out.println(element.getKey() + " -> " + variance);
 
 			if(variance > maximumVariance){
 				maximumVariance = variance;
@@ -74,8 +147,13 @@ public final class Main{
 			final BufferedImage image = IMAGE_SERVICE.readImage(imageName);
 
 			//put grayscaled image into the map
-			sources.put(imageName, IMAGE_SERVICE.grayscaledImage(image));
+			final int width = image.getWidth(null);
+			final int height = image.getHeight(null);
+			sources.put(imageName, IMAGE_SERVICE.grayscaledImage(image, width, height));
+
+			System.out.print(".");
 		}
+		System.out.println();
 		return sources;
 	}
 

@@ -68,37 +68,55 @@ final class ImageService{
 		throw new IllegalArgumentException("No reader for " + file);
 	}
 
-	BufferedImage grayscaledImage(final BufferedImage colorImage){
-		final BufferedImage image = new BufferedImage(colorImage.getWidth(), colorImage.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+	BufferedImage grayscaledImage(final BufferedImage colorImage, final int width, final int height){
+		final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
 		final Graphics g = image.getGraphics();
 		g.drawImage(colorImage, 0, 0, null);
 		g.dispose();
 		return image;
 	}
 
-	int[] applyLaplacian(final BufferedImage image, final int[][] kernel){
-		final int width = image.getWidth(null);
-		final int height = image.getHeight(null);
-		final int[] pixels = getPixels(image, width, height);
+	int[] convoluteEuclidean(final int[] pixels, final int width, final int height, final int imageType, final int[][] kernel0,
+			final int[][] kernel1){
+		final int[] convolutedPixels1 = convolute(pixels, width, height, imageType, kernel0);
+		final int[] convolutedPixels2 = convolute(pixels, width, height, imageType, kernel1);
+		final int[] convolutedPixels = new int[convolutedPixels1.length];
+		for(int i = 0; i < convolutedPixels.length; i ++)
+			convolutedPixels[i] = (int)Math.sqrt(convolutedPixels1[i] * convolutedPixels1[i] + convolutedPixels2[i] * convolutedPixels2[i]);
+		return convolutedPixels;
+	}
+
+	int[] convoluteMean(final int[] pixels, final int width, final int height, final int imageType, final int[][] kernel0,
+			final int[][] kernel1){
+		final int[] convolutedPixels1 = convolute(pixels, width, height, imageType, kernel0);
+		final int[] convolutedPixels2 = convolute(pixels, width, height, imageType, kernel1);
+		final int[] convolutedPixels = new int[convolutedPixels1.length];
+		for(int i = 0; i < convolutedPixels.length; i ++)
+			convolutedPixels[i] = (convolutedPixels1[i] + convolutedPixels2[i]) >> 1;
+		return convolutedPixels;
+	}
+
+	int[] convolute(final int[] pixels, final int width, final int height, final int imageType, final int[][] kernel){
 		final int kernelWidth = kernel.length;
 		final int kernelHeight = kernel[0].length;
 
 		//histogram equalization
-		final int imageType = image.getType();
 		final int[] equalizedPixels = histogramEqualized(pixels, imageType);
 
 		//apply the convolution
 		final int[] destinationPixels = new int[pixels.length - ((width + height) << 1)];
 		//NOTE: ignore first and last rows to avoid going out of range
-		for(int i = 1; i < width - 1; i ++)
-			for(int j = 1; j < height - 1; j ++){
+		final int halfKernelWidth = (kernelWidth - 1) >> 1;
+		final int halfKernelHeight = (kernelHeight - 1) >> 1;
+		for(int i = halfKernelWidth; i < width - halfKernelWidth; i ++)
+			for(int j = halfKernelHeight; j < height - halfKernelHeight; j ++){
 				double value = 0.;
-				for(int u = -(kernelWidth - 1) >> 1; u <= (kernelWidth - 1) >> 1; u ++){
-					for(int v = -(kernelHeight - 1) >> 1; v <= (kernelHeight - 1) >> 1; v ++)
-						value += equalizedPixels[(i + u) * width + (j + v)] * kernel[u + ((kernelWidth - 1) >> 1)][v + ((kernelHeight - 1) >> 1)];
+				for(int u = -halfKernelWidth; u <= halfKernelWidth; u ++){
+					for(int v = -halfKernelHeight; v <= halfKernelHeight; v ++)
+						value += equalizedPixels[(i + u) * width + (j + v)] * kernel[u + halfKernelWidth][v + halfKernelHeight];
 				}
 
-				destinationPixels[(i - 1) * width + (j - 1)] = (int)value;
+				destinationPixels[(i - halfKernelWidth) * (width - halfKernelWidth) + (j - halfKernelHeight)] = (int)value;
 			}
 		return destinationPixels;
 	}
@@ -131,7 +149,7 @@ final class ImageService{
 		return histogram;
 	}
 
-	private int[] getPixels(final BufferedImage image, final int width, final int height){
+	int[] getPixels(final BufferedImage image, final int width, final int height){
 		final int[] pixels = new int[width * height];
 		image.getRaster()
 			.getPixels(0, 0, width, height, pixels);
