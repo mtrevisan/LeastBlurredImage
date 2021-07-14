@@ -37,6 +37,8 @@ public class EventListener{
 	}
 
 
-	public void failedLoadingImage(final String image){}
+	public void cannotLoadLibrary(final Exception e){}
+
+	public void failedLoadingImage(final String imageName){}
 
 }

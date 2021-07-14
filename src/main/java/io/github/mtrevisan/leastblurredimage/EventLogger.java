@@ -56,11 +56,16 @@ public final class EventLogger extends EventListener{
 		return SingletonHelper.INSTANCE;
 	}
 
-	EventLogger(){}
+	private EventLogger(){}
 
 	@Override
-	public void failedLoadingImage(final String image){
-		error("Error opening image {}", image);
+	public void cannotLoadLibrary(final Exception e){
+		error("Cannot load library", e);
+	}
+
+	@Override
+	public void failedLoadingImage(final String imageName){
+		error("Error opening image {}", imageName);
 	}
 
 
@@ -78,6 +83,10 @@ public final class EventLogger extends EventListener{
 
 	private void info(final String message, final Object... parameters){
 		LOGGER.info(composeMessage(message, parameters));
+	}
+
+	private void error(final String message, final Exception exception){
+		LOGGER.error(composeMessage(message), exception);
 	}
 
 	private void error(final String message, final Object... parameters){
