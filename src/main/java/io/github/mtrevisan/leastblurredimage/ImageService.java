@@ -47,12 +47,11 @@ final class ImageService{
 
 	private ImageService(){}
 
-	BufferedImage readImage(final String file) throws IOException{
-		final File f = new File(file);
-		if(!f.exists())
-			throw new IllegalArgumentException("File `" + file + "` does not exists.");
+	BufferedImage readImage(final File file) throws IOException{
+		if(!file.exists())
+			throw new IllegalArgumentException("File `" + file.getName() + "` does not exists.");
 
-		try(final ImageInputStream input = ImageIO.createImageInputStream(f)){
+		try(final ImageInputStream input = ImageIO.createImageInputStream(file)){
 			final Iterator<ImageReader> readers = ImageIO.getImageReaders(input);
 			if(readers.hasNext()){
 				final ImageReader reader = readers.next();
@@ -65,7 +64,8 @@ final class ImageService{
 				}
 			}
 		}
-		throw new IllegalArgumentException("No reader for " + file);
+		//		throw new IllegalArgumentException("No reader for " + file);
+		return null;
 	}
 
 	BufferedImage grayscaledImage(final BufferedImage colorImage, final int width, final int height){

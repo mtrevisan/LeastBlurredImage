@@ -25,7 +25,9 @@
 package io.github.mtrevisan.leastblurredimage;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,7 +45,7 @@ public final class Main{
 
 	public static void main(final String[] args) throws IOException{
 		System.out.println("loading " + args.length + " images");
-		final Map<String, BufferedImage> sources = loadImages(args.length > 0? args: new String[]{});
+		final Map<String, BufferedImage> sources = loadImages(args.length > 0? new File(args[0]): null);
 
 		String leastBlurredImageName = null;
 		double maximumVariance = 0.;
@@ -74,19 +76,25 @@ public final class Main{
 		System.out.println("least blurred is " + leastBlurredImageName);
 	}
 
-	private static Map<String, BufferedImage> loadImages(final String[] imageNames) throws IOException{
-		final Map<String, BufferedImage> sources = new HashMap<>(imageNames.length);
-		for(final String imageName : imageNames){
-			final BufferedImage image = IMAGE_SERVICE.readImage(imageName);
+	private static Map<String, BufferedImage> loadImages(final File folder) throws IOException{
+		Map<String, BufferedImage> sources = Collections.emptyMap();
+		if(folder != null && folder.isDirectory()){
+			final File[] files = folder.listFiles();
+			sources = new HashMap<>(files.length);
+			for(final File file : files){
+				final BufferedImage image = IMAGE_SERVICE.readImage(file);
 
-			//put grayscaled image into the map
-			final int width = image.getWidth(null);
-			final int height = image.getHeight(null);
-			sources.put(imageName, IMAGE_SERVICE.grayscaledImage(image, width, height));
+				if(image != null){
+					//put grayscaled image into the map
+					final int width = image.getWidth(null);
+					final int height = image.getHeight(null);
+					sources.put(file.getName(), IMAGE_SERVICE.grayscaledImage(image, width, height));
 
-			System.out.print(".");
+					System.out.print(".");
+				}
+			}
+			System.out.println();
 		}
-		System.out.println();
 		return sources;
 	}
 
