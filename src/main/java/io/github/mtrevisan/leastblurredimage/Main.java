@@ -25,10 +25,7 @@
 package io.github.mtrevisan.leastblurredimage;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,20 +37,10 @@ public final class Main{
 
 	private static final EventListener eventListener = EventLogger.getInstance();
 
-	private static final Mat KERNEL = new Mat(9, 9, CvType.CV_32F){
-		{
-			put(0, 0, 0);
-			put(0, 1, -1);
-			put(0, 2, 0);
-
-			put(1, 0, -1);
-			put(1, 1, 4);
-			put(1, 2, -1);
-
-			put(2, 0, 0);
-			put(2, 1, -1);
-			put(2, 2, 0);
-		}
+	private static final int[][] KERNEL = {
+		{0, -1, 0},
+		{-1, 4, -1},
+		{0, -1, 0}
 	};
 
 
@@ -96,6 +83,8 @@ public final class Main{
 		return sources;
 	}
 
+	//https://introcs.cs.princeton.edu/java/31datatype/LaplaceFilter.java.html
+	//https://stackoverflow.com/questions/30951726/reading-a-grayscale-image-in-java
 	public static BufferedImage readImage(final String file) throws IOException{
 		final File f = new File(file);
 		if(!f.exists())
