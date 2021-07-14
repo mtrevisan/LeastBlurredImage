@@ -57,19 +57,6 @@
 
 		<!-- TwelveMonkeys ImageIO -->
 		<twelvemonkeys.imageio-core.version>3.7.0</twelvemonkeys.imageio-core.version>
-
-		<!-- OpenCV -->
-		<opencv.version>4.5.2</opencv.version>
-
-		<!-- Logging -->
-		<slf4j.slf4j-api.version>1.7.31</slf4j.slf4j-api.version>
-		<slf4j.slf4j-log4j12.version>1.7.31</slf4j.slf4j-log4j12.version>
-		<logback.logback-classic.version>1.2.3</logback.logback-classic.version>
-
-		<!-- JUnit -->
-		<junit.junit-jupiter-engine.version>5.7.2</junit.junit-jupiter-engine.version>
-		<!-- Apache -->
-		<apache.commons-lang3.version>3.12.0</apache.commons-lang3.version>
 	</properties>
 
 	<profiles>
@@ -311,43 +298,11 @@
 	</build>
 
 	<dependencies>
-		<!-- Logging -->
-		<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>${slf4j.slf4j-api.version}</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<version>${logback.logback-classic.version}</version>
-			<scope>test</scope>
-		</dependency>
-
 		<!-- https://mvnrepository.com/artifact/com.twelvemonkeys.imageio/imageio-core -->
 		<dependency>
 			<groupId>com.twelvemonkeys.imageio</groupId>
 			<artifactId>imageio-core</artifactId>
 			<version>${twelvemonkeys.imageio-core.version}</version>
-		</dependency>
-
-		<!-- JUnit -->
-		<!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine -->
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-engine</artifactId>
-			<version>${junit.junit-jupiter-engine.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<!-- Apache -->
-		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-			<version>${apache.commons-lang3.version}</version>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

@@ -1,5 +1,5 @@
 module io.github.mtrevisan.leastblurredimage{
-	requires org.slf4j;
+	requires java.desktop;
 
 
 	exports io.github.mtrevisan.leastblurredimage;

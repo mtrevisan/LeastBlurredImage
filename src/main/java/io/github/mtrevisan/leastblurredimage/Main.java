@@ -24,7 +24,7 @@
  */
 package io.github.mtrevisan.leastblurredimage;
 
-import java.io.File;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +35,7 @@ import java.util.Map;
 //https://stackoverflow.com/questions/7765810/is-there-a-way-to-detect-if-an-image-is-blurry
 public final class Main{
 
-	private static final EventListener eventListener = EventLogger.getInstance();
+	private static final ImageService IMAGE_SERVICE = ImageService.getInstance();
 
 	private static final int[][] KERNEL = {
 		{0, -1, 0},
@@ -46,74 +46,35 @@ public final class Main{
 
 	private Main(){}
 
-	public static void main(final String[] args){
+	public static void main(final String[] args) throws IOException{
 		final Map<String, BufferedImage> sources = loadImages(args.length > 0? args: new String[]{});
 		System.out.println("loaded " + args.length + " images");
 
 		String leastBlurredImageName = null;
-		double minimumVariance = Double.MAX_VALUE;
+		double maximumVariance = 0.;
 		for(final Map.Entry<String, BufferedImage> element : sources.entrySet()){
-			final BufferedImage destination = applyLaplacian(element.getValue());
+			final BufferedImage image = element.getValue();
+			final int[] convolutedPixels = IMAGE_SERVICE.applyLaplacian(image, KERNEL);
 
-			//take the variance (i.e. standard deviation squared) of the response
-			final double variance = -Core.norm(destination);
+			final double variance = IMAGE_SERVICE.calculateVariance(convolutedPixels);
 
-			System.out.println(element.getKey() + " / " + -variance);
+			System.out.println(element.getKey() + " -> " + ((int)(variance * 10) / 10));
 
-			if(variance < minimumVariance){
-				minimumVariance = variance;
+			if(variance > maximumVariance){
+				maximumVariance = variance;
 				leastBlurredImageName = element.getKey();
 			}
 		}
 		System.out.println("least blurred is " + leastBlurredImageName);
 	}
 
-	private static Map<String, BufferedImage> loadImages(final String[] imageNames){
+	private static Map<String, BufferedImage> loadImages(final String[] imageNames) throws IOException{
 		final Map<String, BufferedImage> sources = new HashMap<>(imageNames.length);
-		for(final String imageName : imageNames)
-			sources.put(imageName, Imgcodecs.imread(imageName, Imgcodecs.IMREAD_GRAYSCALE));
-
-		//check if images are loaded fine
-		for(final Map.Entry<String, BufferedImage> element : sources.entrySet())
-			if(element.getValue().empty()){
-				eventListener.failedLoadingImage(element.getKey());
-				System.exit(-1);
-			}
-
-		return sources;
-	}
-
-	//https://introcs.cs.princeton.edu/java/31datatype/LaplaceFilter.java.html
-	//https://stackoverflow.com/questions/30951726/reading-a-grayscale-image-in-java
-	public static BufferedImage readImage(final String file) throws IOException{
-		final File f = new File(file);
-		if(!f.exists())
-			throw new IllegalArgumentException("File `" + file + "` does not exists.");
-
-		try(final ImageInputStream input = ImageIO.createImageInputStream(f)){
-			final Iterator<ImageReader> readers = ImageIO.getImageReaders(input);
-			if(readers.hasNext()){
-				final ImageReader reader = readers.next();
-				try{
-					reader.setInput(input);
-					return reader.read(0);
-				}
-				finally{
-					reader.dispose();
-				}
-			}
+		for(final String imageName : imageNames){
+			final BufferedImage image = IMAGE_SERVICE.readImage(imageName);
+			sources.put(imageName, IMAGE_SERVICE.grayscaledImage(image));
 		}
-	}
-
-	private static Mat applyLaplacian(final Mat source){
-		//histogram equalization
-		final Mat equalizedSource = new Mat(source.rows(), source.cols(), source.type());
-		Imgproc.equalizeHist(source, equalizedSource);
-
-		final Mat destination = new Mat(source.rows(), source.cols(), source.type());
-		Imgproc.filter2D(equalizedSource, destination, -1, KERNEL);
-
-		return destination;
+		return sources;
 	}
 
 }
