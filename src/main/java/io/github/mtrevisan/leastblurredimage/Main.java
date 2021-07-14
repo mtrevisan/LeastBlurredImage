@@ -72,6 +72,8 @@ public final class Main{
 		final Map<String, BufferedImage> sources = new HashMap<>(imageNames.length);
 		for(final String imageName : imageNames){
 			final BufferedImage image = IMAGE_SERVICE.readImage(imageName);
+
+			//put grayscaled image into the map
 			sources.put(imageName, IMAGE_SERVICE.grayscaledImage(image));
 		}
 		return sources;
