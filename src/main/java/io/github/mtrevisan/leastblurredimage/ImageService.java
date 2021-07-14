@@ -86,9 +86,10 @@ final class ImageService{
 	private int[] convoluteNorm(final int[] pixels, final int width, final int height, final int imageType, final Kernel kernel){
 		final int[][] kernel0 = kernel.getKernel();
 		final int[][] kernel1 = transpose(kernel0);
-		final KernelNorm norm = kernel.getNorm();
 		final int[] convolutedPixels1 = convolute(pixels, width, height, imageType, kernel0);
 		final int[] convolutedPixels2 = convolute(pixels, width, height, imageType, kernel1);
+
+		final KernelNorm norm = kernel.getNorm();
 		final int[] convolutedPixels = new int[convolutedPixels1.length];
 		final int length = convolutedPixels.length;
 		for(int i = 0; i < length; i ++)
