@@ -44,7 +44,7 @@ public final class Main{
 	private Main(){}
 
 	public static void main(final String[] args) throws IOException{
-		System.out.println("loading " + args.length + " images");
+		System.out.println("loading images...");
 		final Map<String, BufferedImage> sources = loadImages(args.length > 0? new File(args[0]): null);
 
 		String leastBlurredImageName = null;
@@ -55,13 +55,13 @@ public final class Main{
 			final int height = image.getHeight(null);
 			final int[] pixels = IMAGE_SERVICE.getPixels(image, width, height);
 			final int imageType = image.getType();
-			final Kernel kernel = Kernel.LAPLACE;
+//			final Kernel kernel = Kernel.LAPLACE;
 //			final Kernel kernel = Kernel.LAPLACIAN_GRADIENT;
 //			final Kernel kernel = Kernel.SOBEL_TENENGRAD;
 //			final Kernel kernel = Kernel.SOBEL_FIELDMANN;
 //			final Kernel kernel = Kernel.SCHARR;
 //			final Kernel kernel = Kernel.GRADIENT;
-//			final Kernel kernel = Kernel.BRENNER;
+			final Kernel kernel = Kernel.BRENNER;
 			final int[] convolutedPixels = IMAGE_SERVICE.convolute(pixels, width, height, imageType, kernel);
 
 			final double variance = IMAGE_SERVICE.calculateVariance(convolutedPixels);
@@ -90,10 +90,9 @@ public final class Main{
 					final int height = image.getHeight(null);
 					sources.put(file.getName(), IMAGE_SERVICE.grayscaledImage(image, width, height));
 
-					System.out.print(".");
+					System.out.println("loaded " + file.getName());
 				}
 			}
-			System.out.println();
 		}
 		return sources;
 	}
