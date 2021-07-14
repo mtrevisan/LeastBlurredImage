@@ -77,33 +77,33 @@ final class ImageService{
 	}
 
 	int[] convolute(final int[] pixels, final int width, final int height, final int imageType, final Kernel kernel){
-		if(kernel.norm == KernelNorm.NONE)
-			return convolute(pixels, width, height, imageType, kernel.kernel);
-		if(kernel.norm == KernelNorm.EUCLIDEAN)
-			return convoluteEuclidean(pixels, width, height, imageType, kernel.kernel, kernel.kernelVertical);
-		if(kernel.norm == KernelNorm.MEAN)
-			return convoluteMean(pixels, width, height, imageType, kernel.kernel, kernel.kernelVertical);
-		return null;
+		if(kernel.getNorm() == KernelNorm.NONE)
+			return convolute(pixels, width, height, imageType, kernel.getKernel());
+
+		return convoluteNorm(pixels, width, height, imageType, kernel);
 	}
 
-	private int[] convoluteEuclidean(final int[] pixels, final int width, final int height, final int imageType, final int[][] kernel0,
-			final int[][] kernel1){
+	private int[] convoluteNorm(final int[] pixels, final int width, final int height, final int imageType, final Kernel kernel){
+		final int[][] kernel0 = kernel.getKernel();
+		final int[][] kernel1 = transpose(kernel0);
+		final KernelNorm norm = kernel.getNorm();
 		final int[] convolutedPixels1 = convolute(pixels, width, height, imageType, kernel0);
 		final int[] convolutedPixels2 = convolute(pixels, width, height, imageType, kernel1);
 		final int[] convolutedPixels = new int[convolutedPixels1.length];
-		for(int i = 0; i < convolutedPixels.length; i ++)
-			convolutedPixels[i] = (int)Math.sqrt(convolutedPixels1[i] * convolutedPixels1[i] + convolutedPixels2[i] * convolutedPixels2[i]);
+		final int length = convolutedPixels.length;
+		for(int i = 0; i < length; i ++)
+			convolutedPixels[i] = norm.compose(convolutedPixels1[i], convolutedPixels2[i]);
 		return convolutedPixels;
 	}
 
-	private int[] convoluteMean(final int[] pixels, final int width, final int height, final int imageType, final int[][] kernel0,
-			final int[][] kernel1){
-		final int[] convolutedPixels1 = convolute(pixels, width, height, imageType, kernel0);
-		final int[] convolutedPixels2 = convolute(pixels, width, height, imageType, kernel1);
-		final int[] convolutedPixels = new int[convolutedPixels1.length];
-		for(int i = 0; i < convolutedPixels.length; i ++)
-			convolutedPixels[i] = (convolutedPixels1[i] + convolutedPixels2[i]) >> 1;
-		return convolutedPixels;
+	private int[][] transpose(final int[][] array){
+		final int width = array.length;
+		final int height = array[0].length;
+		final int[][] result = new int[height][width];
+		for(int i = 0; i < height; i ++)
+			for(int j = i + 1; j < width; j ++)
+				result[i][j] = array[j][i];
+		return result;
 	}
 
 	private int[] convolute(final int[] pixels, final int width, final int height, final int imageType, final int[][] kernel){
@@ -113,11 +113,11 @@ final class ImageService{
 		//histogram equalization
 		final int[] equalizedPixels = histogramEqualized(pixels, imageType);
 
-		//apply the convolution
-		final int[] destinationPixels = new int[pixels.length - ((width + height) << 1)];
-		//NOTE: ignore first and last rows to avoid going out of range
 		final int halfKernelWidth = (kernelWidth - 1) >> 1;
 		final int halfKernelHeight = (kernelHeight - 1) >> 1;
+		//apply the convolution
+		final int[] destinationPixels = new int[pixels.length - width * halfKernelWidth - height * halfKernelHeight];
+		//NOTE: ignore first and last rows to avoid going out of range
 		for(int i = halfKernelWidth; i < width - halfKernelWidth; i ++)
 			for(int j = halfKernelHeight; j < height - halfKernelHeight; j ++){
 				double value = 0.;
@@ -152,7 +152,7 @@ final class ImageService{
 	 * of pixels in the image of the value equal to the index of the element.
 	 */
 	private int[] getHistogram(final int[] pixels, final int imageType){
-		final int[] histogram = (imageType == 10? new int[256]: new int[65536]);
+		final int[] histogram = new int[1 << (imageType == BufferedImage.TYPE_BYTE_GRAY? 8: 16)];
 		final int length = pixels.length;
 		for(int i = 0; i < length; i ++)
 			histogram[pixels[i]] ++;

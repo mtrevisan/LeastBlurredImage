@@ -53,13 +53,13 @@ public final class Main{
 			final int height = image.getHeight(null);
 			final int[] pixels = IMAGE_SERVICE.getPixels(image, width, height);
 			final int imageType = image.getType();
-//			final Kernel kernel = Kernel.LAPLACE;
+			final Kernel kernel = Kernel.LAPLACE;
 //			final Kernel kernel = Kernel.LAPLACIAN_GRADIENT;
 //			final Kernel kernel = Kernel.SOBEL_TENENGRAD;
 //			final Kernel kernel = Kernel.SOBEL_FIELDMANN;
 //			final Kernel kernel = Kernel.SCHARR;
 //			final Kernel kernel = Kernel.GRADIENT;
-			final Kernel kernel = Kernel.BRENNER;
+//			final Kernel kernel = Kernel.BRENNER;
 			final int[] convolutedPixels = IMAGE_SERVICE.convolute(pixels, width, height, imageType, kernel);
 
 			final double variance = IMAGE_SERVICE.calculateVariance(convolutedPixels);

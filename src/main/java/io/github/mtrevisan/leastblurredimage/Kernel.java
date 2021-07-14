@@ -66,26 +66,21 @@ public enum Kernel{
 	}, KernelNorm.EUCLIDEAN);
 
 
-	int [][] kernel;
-	int [][] kernelVertical;
-	KernelNorm norm;
+	private final int [][] kernel;
+	private final KernelNorm norm;
 
 
 	Kernel(final int[][] kernel, final KernelNorm norm){
 		this.kernel = kernel;
 		this.norm = norm;
-		if(norm != KernelNorm.NONE)
-			kernelVertical = transpose(kernel);
 	}
 
-	private int[][] transpose(final int[][] array){
-		final int width = array.length;
-		final int height = array[0].length;
-		final int[][] result = new int[height][width];
-		for(int i = 0; i < height; i ++)
-			for(int j = i + 1; j < width; j ++)
-				result[i][j] = array[j][i];
-		return result;
+	public int[][] getKernel(){
+		return kernel;
+	}
+
+	public KernelNorm getNorm(){
+		return norm;
 	}
 
 }

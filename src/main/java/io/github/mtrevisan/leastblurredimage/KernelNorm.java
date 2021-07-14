@@ -26,7 +26,26 @@ package io.github.mtrevisan.leastblurredimage;
 
 
 public enum KernelNorm{
-	NONE,
-	EUCLIDEAN,
-	MEAN
+	NONE(){
+		@Override
+		int compose(final int a, final int b){
+			return 0;
+		}
+	},
+	EUCLIDEAN(){
+		@Override
+		int compose(final int a, final int b){
+			return (int)Math.sqrt(a * a + b * b);
+		}
+	},
+	MEAN(){
+		@Override
+		int compose(final int a, final int b){
+			return (a + b) >> 1;
+		}
+	};
+
+
+	abstract int compose(final int a, final int b);
+
 }
