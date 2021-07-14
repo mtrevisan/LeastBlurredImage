@@ -105,6 +105,7 @@ public final class Main{
 
 	public static void main(final String[] args){
 		final Map<String, Mat> sources = loadImages(args.length > 0? args: new String[]{});
+		System.out.println("loaded " + args.length + " images");
 
 		String leastBlurredImageName = null;
 		double minimumVariance = Double.MAX_VALUE;
@@ -114,12 +115,14 @@ public final class Main{
 			//take the variance (i.e. standard deviation squared) of the response
 			final double variance = -Core.norm(destination);
 
+			System.out.println(element.getKey() + " / " + -variance);
+
 			if(variance < minimumVariance){
 				minimumVariance = variance;
 				leastBlurredImageName = element.getKey();
 			}
 		}
-		System.out.println(leastBlurredImageName);
+		System.out.println("least blurred is " + leastBlurredImageName);
 	}
 
 	private static Map<String, Mat> loadImages(final String[] imageNames){
@@ -138,8 +141,13 @@ public final class Main{
 	}
 
 	private static Mat applyLaplacian(final Mat source){
+		//histogram equalization
+		final Mat equalizedSource = new Mat(source.rows(), source.cols(), source.type());
+		Imgproc.equalizeHist(source, equalizedSource);
+
 		final Mat destination = new Mat(source.rows(), source.cols(), source.type());
-		Imgproc.filter2D(source, destination, -1, KERNEL);
+		Imgproc.filter2D(equalizedSource, destination, -1, KERNEL);
+
 		return destination;
 	}
 
