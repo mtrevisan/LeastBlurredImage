@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>io.github.mtrevisan</groupId>
+	<artifactId>least-blurred-image</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+
+	<packaging>jar</packaging>
+
+	<name>LeastBlurredImage</name>
+	<description>Library for detecting the least blurred image from a set</description>
+	<url>https://github.com/mtrevisan/LeastBlurredImage</url>
+
+	<developers>
+		<developer>
+			<name>Mauro Trevisan</name>
+			<url>https://github.com/mtrevisan/</url>
+			<roles>
+				<role>Developer</role>
+			</roles>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:git@github.com:mtrevisan/LeastBlurredImage.git</connection>
+		<developerConnection>scm:git:git@github.com:mtrevisan/LeastBlurredImage.git</developerConnection>
+		<url>https://github.com/mtrevisan/LeastBlurredImage</url>
+	</scm>
+
+	<issueManagement>
+		<url>https://github.com/mtrevisan/LeastBlurredImage/issues</url>
+		<system>GitHub Issues</system>
+	</issueManagement>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+		<java.version>1.11</java.version>
+		<maven.compiler.source>1.11</maven.compiler.source>
+		<maven.compiler.target>1.11</maven.compiler.target>
+
+		<javadoc.html.version>-html5</javadoc.html.version>
+
+		<!-- Profiles & Build -->
+		<maven-deploy-plugin.version>2.8.2</maven-deploy-plugin.version>
+		<maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
+		<sonatype.nexus-staging-maven-plugin.version>1.6.8</sonatype.nexus-staging-maven-plugin.version>
+		<maven-source-plugin.version>3.2.1</maven-source-plugin.version>
+		<maven-javadoc-plugin.version>3.2.0</maven-javadoc-plugin.version>
+		<maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
+		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+		<maven-help-plugin.version>3.2.0</maven-help-plugin.version>
+		<maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
+
+		<!-- Logging -->
+		<slf4j.slf4j-api.version>1.7.31</slf4j.slf4j-api.version>
+		<slf4j.slf4j-log4j12.version>1.7.31</slf4j.slf4j-log4j12.version>
+		<logback.logback-classic.version>1.2.3</logback.logback-classic.version>
+
+		<!-- JUnit -->
+		<junit.junit-jupiter-engine.version>5.7.2</junit.junit-jupiter-engine.version>
+		<!-- Apache -->
+		<apache.commons-lang3.version>3.12.0</apache.commons-lang3.version>
+	</properties>
+
+	<profiles>
+		<profile>
+			<id>stage</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<build>
+				<plugins>
+					<!-- Deploy -->
+					<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-deploy-plugin -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-deploy-plugin</artifactId>
+						<version>${maven-deploy-plugin.version}</version>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<!-- mvn clean deploy -U -Dmaven.test.skip=true-->
+			<!-- mvn clean deploy -Pdeploy -->
+			<id>release</id>
+			<properties>
+				<gpg.executable>gpg</gpg.executable>
+			</properties>
+			<build>
+				<plugins>
+					<!-- Signing JAR Files -->
+					<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-gpg-plugin -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>${maven-gpg-plugin.version}</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<!-- Nexus Staging Plugin -->
+					<!-- https://mvnrepository.com/artifact/org.sonatype.plugins/nexus-staging-maven-plugin -->
+					<plugin>
+						<groupId>org.sonatype.plugins</groupId>
+						<artifactId>nexus-staging-maven-plugin</artifactId>
+						<version>${sonatype.nexus-staging-maven-plugin.version}</version>
+						<extensions>true</extensions>
+						<executions>
+							<execution>
+								<id>default-deploy</id>
+								<phase>deploy</phase>
+								<goals>
+									<goal>deploy</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<!-- The Base URL of Nexus instance where we want to stage -->
+							<serverId>sonatype-nexus-staging</serverId>
+							<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+							<autoReleaseAfterClose>true</autoReleaseAfterClose>
+						</configuration>
+					</plugin>
+					<!-- Source -->
+					<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-source-plugin -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-source-plugin</artifactId>
+						<version>${maven-source-plugin.version}</version>
+						<executions>
+							<execution>
+								<id>attach-sources</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<!-- JavaDoc -->
+					<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-javadoc-plugin -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<version>${maven-javadoc-plugin.version}</version>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+								<configuration>
+									<additionalOptions>${javadoc.html.version}</additionalOptions>
+									<javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
+									<detectJavaApiLink>false</detectJavaApiLink>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+
+			<distributionManagement>
+				<snapshotRepository>
+					<id>sonatype-nexus-snapshots</id>
+					<name>Sonatype Nexus Snapshots</name>
+					<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+					<uniqueVersion>true</uniqueVersion>
+				</snapshotRepository>
+				<repository>
+					<id>sonatype-nexus-staging</id>
+					<name>Nexus Release Repository</name>
+					<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+					<uniqueVersion>false</uniqueVersion>
+				</repository>
+			</distributionManagement>
+		</profile>
+	</profiles>
+
+	<build>
+		<plugins>
+			<!-- Surefire -->
+			<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-surefire-plugin -->
+<!--			<plugin>-->
+<!--				<groupId>org.apache.maven.plugins</groupId>-->
+<!--				<artifactId>maven-surefire-plugin</artifactId>-->
+<!--				<version>${maven-surefire-plugin.version}</version>-->
+<!--				<configuration>-->
+<!--					<argLine>&#45;&#45;add-opens-->
+<!--						io.github.mtrevisan.leastblurredimage/io.github.mtrevisan.leastblurredimage.codecs.queclink=spring.core,spring.expression,ALL-UNNAMED-->
+<!--						&#45;&#45;add-opens-->
+<!--						io.github.mtrevisan.leastblurredimage/io.github.mtrevisan.leastblurredimage.annotations=spring.core,spring.expression,ALL-UNNAMED-->
+<!--						&#45;&#45;add-opens-->
+<!--						io.github.mtrevisan.leastblurredimage/io.github.mtrevisan.leastblurredimage.annotations.bindings=spring.core,spring.expression,ALL-UNNAMED-->
+<!--						&#45;&#45;add-opens-->
+<!--						io.github.mtrevisan.leastblurredimage/io.github.mtrevisan.leastblurredimage.annotations.checksummers=spring.core,spring.expression,ALL-UNNAMED-->
+<!--						&#45;&#45;add-opens-->
+<!--						io.github.mtrevisan.leastblurredimage/io.github.mtrevisan.leastblurredimage.annotations.converters=spring.core,spring.expression,ALL-UNNAMED-->
+<!--						&#45;&#45;add-opens-->
+<!--						io.github.mtrevisan.leastblurredimage/io.github.mtrevisan.leastblurredimage.annotations.validators=spring.core,spring.expression,ALL-UNNAMED-->
+<!--						&#45;&#45;add-opens-->
+<!--						io.github.mtrevisan.leastblurredimage/io.github.mtrevisan.leastblurredimage.codecs=spring.core,spring.expression,ALL-UNNAMED-->
+<!--						&#45;&#45;add-opens io.github.mtrevisan.leastblurredimage/io.github.mtrevisan.leastblurredimage.external=ALL-UNNAMED &#45;&#45;add-opens-->
+<!--						io.github.mtrevisan.leastblurredimage/io.github.mtrevisan.leastblurredimage.internal.matchers=ALL-UNNAMED</argLine>-->
+<!--				</configuration>-->
+<!--			</plugin>-->
+			<!-- Compiler -->
+			<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven-compiler-plugin.version}</version>
+				<configuration>
+					<source>${maven.compiler.source}</source>
+					<target>${maven.compiler.target}</target>
+					<encoding>${project.build.sourceEncoding}</encoding>
+					<showDeprecation>true</showDeprecation>
+				</configuration>
+			</plugin>
+			<!-- Help -->
+			<!-- display active profile in compile phase -->
+			<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-help-plugin -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-help-plugin</artifactId>
+				<version>${maven-help-plugin.version}</version>
+				<executions>
+					<execution>
+						<id>show-profiles</id>
+						<phase>compile</phase>
+						<goals>
+							<goal>active-profiles</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- Templating -->
+			<!-- https://mvnrepository.com/artifact/org.codehaus.mojo/templating-maven-plugin -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>templating-maven-plugin</artifactId>
+				<version>1.0.0</version>
+				<executions>
+					<execution>
+						<id>generate-version-class</id>
+						<goals>
+							<goal>filter-sources</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- Shade -->
+			<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-shade-plugin -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>${maven-shade-plugin.version}</version>
+				<executions>
+					<execution>
+						<!-- Run shade goal on package phase -->
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<minimizeJar>true</minimizeJar>
+							<shadedArtifactAttached>true</shadedArtifactAttached>
+							<shadedClassifierName>shaded</shadedClassifierName>
+							<filters>
+								<!-- FIXME: strengthen the inclusions -->
+								<!-- ClassNotFoundException: ch.qos.logback.classic.boolex.OnMarkerEvaluator-->
+								<filter>
+									<artifact>ch.qos.logback:logback-classic</artifact>
+									<includes>
+										<include>**</include>
+									</includes>
+								</filter>
+							</filters>
+							<transformers>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<manifestEntries>
+										<X-Compile-Source-JDK>${maven.compiler.source}</X-Compile-Source-JDK>
+										<X-Compile-Target-JDK>${maven.compiler.target}</X-Compile-Target-JDK>
+										<Built-By>Mauro Trevisan</Built-By>
+										<Build-Jdk>${java.version} (${java.vendor} ${java.vm.version})</Build-Jdk>
+										<Build-OS>${os.name} ${os.arch} ${os.version}</Build-OS>
+									</manifestEntries>
+								</transformer>
+							</transformers>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+		<!-- Logging -->
+		<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slf4j.slf4j-api.version}</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>${logback.logback-classic.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- JUnit -->
+		<!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine -->
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
+			<version>${junit.junit-jupiter-engine.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<!-- Apache -->
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>${apache.commons-lang3.version}</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<licenses>
+		<license>
+			<name>MIT License</name>
+			<url>https://opensource.org/licenses/MIT</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+</project>
