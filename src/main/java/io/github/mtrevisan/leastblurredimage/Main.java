@@ -24,14 +24,9 @@
  */
 package io.github.mtrevisan.leastblurredimage;
 
-import org.opencv.core.Core;
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
-
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
@@ -44,45 +39,6 @@ import java.util.Map;
 public final class Main{
 
 	private static final EventListener eventListener = EventLogger.getInstance();
-
-	static{
-		try{
-			final String osName = System.getProperty("os.name");
-			InputStream in = null;
-			File fileOut = null;
-			if(osName.startsWith("Windows")){
-				final int bitness = Integer.parseInt(System.getProperty("sun.arch.data.model"));
-				if(bitness == 64){
-					in = Main.class.getResourceAsStream("/opencv/x64/opencv_java452.dll");
-					fileOut = File.createTempFile("lib", ".dll");
-				}
-				else{
-					in = Main.class.getResourceAsStream("/opencv/x86/opencv_java452.dll");
-					fileOut = File.createTempFile("lib", ".dll");
-				}
-			}
-			else if(osName.equals("Mac OS X")){
-				in = Main.class.getResourceAsStream("/opencv/mac/libopencv_java452.dylib");
-				fileOut = File.createTempFile("lib", ".dylib");
-			}
-
-			final byte[] buffer = new byte[in.available()];
-			in.read(buffer);
-
-			final OutputStream os = new FileOutputStream(fileOut);
-			os.write(buffer);
-			in.close();
-			os.close();
-			System.load(fileOut.toString());
-
-
-			//load the native library
-//			System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-		}
-		catch(final Exception e){
-			eventListener.cannotLoadLibrary(e);
-		}
-	}
 
 	private static final Mat KERNEL = new Mat(9, 9, CvType.CV_32F){
 		{
@@ -104,13 +60,13 @@ public final class Main{
 	private Main(){}
 
 	public static void main(final String[] args){
-		final Map<String, Mat> sources = loadImages(args.length > 0? args: new String[]{});
+		final Map<String, BufferedImage> sources = loadImages(args.length > 0? args: new String[]{});
 		System.out.println("loaded " + args.length + " images");
 
 		String leastBlurredImageName = null;
 		double minimumVariance = Double.MAX_VALUE;
-		for(final Map.Entry<String, Mat> element : sources.entrySet()){
-			final Mat destination = applyLaplacian(element.getValue());
+		for(final Map.Entry<String, BufferedImage> element : sources.entrySet()){
+			final BufferedImage destination = applyLaplacian(element.getValue());
 
 			//take the variance (i.e. standard deviation squared) of the response
 			final double variance = -Core.norm(destination);
@@ -125,19 +81,39 @@ public final class Main{
 		System.out.println("least blurred is " + leastBlurredImageName);
 	}
 
-	private static Map<String, Mat> loadImages(final String[] imageNames){
-		final Map<String, Mat> sources = new HashMap<>(imageNames.length);
+	private static Map<String, BufferedImage> loadImages(final String[] imageNames){
+		final Map<String, BufferedImage> sources = new HashMap<>(imageNames.length);
 		for(final String imageName : imageNames)
 			sources.put(imageName, Imgcodecs.imread(imageName, Imgcodecs.IMREAD_GRAYSCALE));
 
 		//check if images are loaded fine
-		for(final Map.Entry<String, Mat> element : sources.entrySet())
+		for(final Map.Entry<String, BufferedImage> element : sources.entrySet())
 			if(element.getValue().empty()){
 				eventListener.failedLoadingImage(element.getKey());
 				System.exit(-1);
 			}
 
 		return sources;
+	}
+
+	public static BufferedImage readImage(final String file) throws IOException{
+		final File f = new File(file);
+		if(!f.exists())
+			throw new IllegalArgumentException("File `" + file + "` does not exists.");
+
+		try(final ImageInputStream input = ImageIO.createImageInputStream(f)){
+			final Iterator<ImageReader> readers = ImageIO.getImageReaders(input);
+			if(readers.hasNext()){
+				final ImageReader reader = readers.next();
+				try{
+					reader.setInput(input);
+					return reader.read(0);
+				}
+				finally{
+					reader.dispose();
+				}
+			}
+		}
 	}
 
 	private static Mat applyLaplacian(final Mat source){

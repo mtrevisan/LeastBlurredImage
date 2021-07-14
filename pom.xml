@@ -55,6 +55,9 @@
 		<maven-help-plugin.version>3.2.0</maven-help-plugin.version>
 		<maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
 
+		<!-- TwelveMonkeys ImageIO -->
+		<twelvemonkeys.imageio-core.version>3.7.0</twelvemonkeys.imageio-core.version>
+
 		<!-- OpenCV -->
 		<opencv.version>4.5.2</opencv.version>
 
@@ -321,6 +324,13 @@
 			<artifactId>logback-classic</artifactId>
 			<version>${logback.logback-classic.version}</version>
 			<scope>test</scope>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/com.twelvemonkeys.imageio/imageio-core -->
+		<dependency>
+			<groupId>com.twelvemonkeys.imageio</groupId>
+			<artifactId>imageio-core</artifactId>
+			<version>${twelvemonkeys.imageio-core.version}</version>
 		</dependency>
 
 		<!-- JUnit -->
