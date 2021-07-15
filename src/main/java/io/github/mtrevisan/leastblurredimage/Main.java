@@ -43,7 +43,7 @@ public final class Main{
 
 	private Main(){}
 
-	public static void main(final String[] args) throws IOException{
+	public static void main(final String[] args){
 		System.out.println("loading images...");
 		final Map<String, BufferedImage> sources = loadImages(args.length > 0? new File(args[0]): null);
 
@@ -76,7 +76,7 @@ public final class Main{
 		System.out.println("least blurred is " + leastBlurredImageName);
 	}
 
-	private static Map<String, BufferedImage> loadImages(final File folder) throws IOException{
+	private static Map<String, BufferedImage> loadImages(final File folder){
 		Map<String, BufferedImage> sources = Collections.emptyMap();
 		if(folder != null && folder.isDirectory()){
 			final File[] files = folder.listFiles();

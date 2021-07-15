@@ -47,7 +47,7 @@ final class ImageService{
 
 	private ImageService(){}
 
-	BufferedImage readImage(final File file) throws IOException{
+	BufferedImage readImage(final File file){
 		if(!file.exists())
 			throw new IllegalArgumentException("File `" + file.getName() + "` does not exists.");
 
@@ -64,7 +64,10 @@ final class ImageService{
 				}
 			}
 		}
-		//		throw new IllegalArgumentException("No reader for " + file);
+		catch(final IOException e){
+//			e.printStackTrace();
+		}
+//		throw new IllegalArgumentException("No reader for " + file);
 		return null;
 	}
 
@@ -168,7 +171,6 @@ final class ImageService{
 	}
 
 	double calculateVariance(final int[] pixels){
-		//take the variance (i.e. standard deviation squared) of the response
 		final double mean = calculateMean(pixels);
 
 		double variance = 0.;
