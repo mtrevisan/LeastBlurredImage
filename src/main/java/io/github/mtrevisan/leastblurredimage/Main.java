@@ -26,10 +26,6 @@ package io.github.mtrevisan.leastblurredimage;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 
 //https://www.pyimagesearch.com/2015/09/07/blur-detection-with-opencv/
@@ -43,50 +39,51 @@ public final class Main{
 
 	private Main(){}
 
-	public static void main(final String[] args) throws IOException{
+	public static void main(final String[] args){
 		System.out.println("loading images...");
 
 		final File folder = new File(args[0]);
-		if(folder != null && folder.isDirectory()){
+		if(folder.isDirectory()){
 			String leastBlurredImageName = null;
 			double maximumVariance = 0.;
 
 			final File[] files = folder.listFiles();
-			for(final File file : files){
-				final BufferedImage image = IMAGE_SERVICE.readImage(file);
+			if(files != null)
+				for(final File file : files){
+					final BufferedImage image = IMAGE_SERVICE.readImage(file);
 
-				if(image != null){
-					final String imageName = file.getName();
-					System.out.print("loaded " + imageName);
+					if(image != null){
+						final String imageName = file.getName();
+						System.out.print("loaded " + imageName);
 
-					//put grayscaled image into the map
-					final int width = image.getWidth(null);
-					final int height = image.getHeight(null);
-					final BufferedImage grayscaledImage = IMAGE_SERVICE.grayscaledImage(image, width, height);
+						//put grayscaled image into the map
+						final int width = image.getWidth(null);
+						final int height = image.getHeight(null);
+						final BufferedImage grayscaledImage = IMAGE_SERVICE.grayscaledImage(image, width, height);
 
-					final int[] pixels = IMAGE_SERVICE.getPixels(grayscaledImage, width, height);
-					final int imageType = grayscaledImage.getType();
-//					final Kernel kernel = Kernel.LAPLACE;
-//					final Kernel kernel = Kernel.LAPLACIAN_GRADIENT;
-//					final Kernel kernel = Kernel.SOBEL_TENENGRAD;
-//					final Kernel kernel = Kernel.SOBEL_FIELDMANN;
-//					final Kernel kernel = Kernel.SCHARR;
-//					final Kernel kernel = Kernel.GRADIENT;
-					final Kernel kernel = Kernel.BRENNER;
-					final int[] convolutedPixels = IMAGE_SERVICE.convolute(pixels, width, height, imageType, kernel);
+						final int[] pixels = IMAGE_SERVICE.getPixels(grayscaledImage, width, height);
+						final int imageType = grayscaledImage.getType();
+//						final Kernel kernel = Kernel.LAPLACE;
+//						final Kernel kernel = Kernel.LAPLACIAN_GRADIENT;
+//						final Kernel kernel = Kernel.SOBEL_TENENGRAD;
+//						final Kernel kernel = Kernel.SOBEL_FIELDMANN;
+//						final Kernel kernel = Kernel.SCHARR;
+//						final Kernel kernel = Kernel.GRADIENT;
+						final Kernel kernel = Kernel.BRENNER;
+						final int[] convolutedPixels = IMAGE_SERVICE.convolute(pixels, width, height, imageType, kernel);
 
-					final double variance = IMAGE_SERVICE.calculateVariance(convolutedPixels);
+						final double variance = IMAGE_SERVICE.calculateVariance(convolutedPixels);
 
-					System.out.print("\t-> " + variance);
+						System.out.print("\t-> " + variance);
 
-					if(variance > maximumVariance){
-						maximumVariance = variance;
-						leastBlurredImageName = imageName;
+						if(variance > maximumVariance){
+							maximumVariance = variance;
+							leastBlurredImageName = imageName;
+						}
+
+						System.out.println();
 					}
-
-					System.out.println();
 				}
-			}
 
 			System.out.println("least blurred is " + leastBlurredImageName);
 		}
