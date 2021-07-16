@@ -24,63 +24,75 @@
  */
 package io.github.mtrevisan.leastblurredimage;
 
+import java.awt.image.Kernel;
 
-public enum Kernel{
-	LAPLACE(new int[][]{
-		{0, -1, 0},
-		{-1, 4, -1},
-		{0, -1, 0}
+
+public enum BlurKernel{
+	LAPLACE(3, 3, new float[]{
+		0.f, -1.f, 0.f,
+		-1.f, 4.f, -1.f,
+		0.f, -1.f, 0.f
 	}, KernelNorm.NONE),
-	LAPLACIAN_GRADIENT(new int[][]{
-		{1, 4, 1},
-		{4, -20, 4},
-		{1, 4, 1}
+	LAPLACIAN_GRADIENT(3, 3, new float[]{
+		1.f, 4.f, 1.f,
+		4.f, -20.f, 4.f,
+		1.f, 4.f, 1.f
 	}, KernelNorm.NONE),
 	//https://en.wikipedia.org/wiki/Sobel_operator
 	//second to best?
-	SOBEL_TENENGRAD(new int[][]{
-		{1, 0, -1},
-		{2, 0, -2},
-		{1, 0, -1}
+	SOBEL_TENENGRAD(3, 3, new float[]{
+		1.f, 0.f, -1.f,
+		2.f, 0.f, -2.f,
+		1.f, 0.f, -1.f
 	}, KernelNorm.EUCLIDEAN),
 	//https://en.wikipedia.org/wiki/Sobel_operator
-	SOBEL_FIELDMANN(new int[][]{
-		{3, 0, -3},
-		{10, 0, -10},
-		{3, 0, -3}
+	SOBEL_FIELDMANN(3, 3, new float[]{
+		3.f, 0.f, -3.f,
+		10.f, 0.f, -10.f,
+		3.f, 0.f, -3.f
 	}, KernelNorm.EUCLIDEAN),
 	//https://en.wikipedia.org/wiki/Sobel_operator
-	SCHARR(new int[][]{
-		{47, 0, -47},
-		{162, 0, -162},
-		{47, 0, -47}
-	}, KernelNorm.EUCLIDEAN),
-	GRADIENT(new int[][]{
-		{-1},
-		{1}
-	}, KernelNorm.MEAN),
-	//best?
-	BRENNER(new int[][]{
-		{-1},
-		{1}
+	SCHARR(3, 3, new float[]{
+		47.f, 0.f, -47.f,
+		162.f, 0.f, -162.f,
+		47.f, 0.f, -47.f
 	}, KernelNorm.EUCLIDEAN);
 
 
-	private final int [][] kernel;
+	private final Kernel kernel;
+	private Kernel kernelTransposed;
 	private final KernelNorm norm;
 
 
-	Kernel(final int[][] kernel, final KernelNorm norm){
-		this.kernel = kernel;
+	BlurKernel(final int width, final int height, final float[] kernel, final KernelNorm norm){
+		this.kernel = new Kernel(width, height, kernel);
 		this.norm = norm;
 	}
 
-	public int[][] getKernel(){
+	Kernel getKernel(){
 		return kernel;
 	}
 
-	public KernelNorm getNorm(){
+	Kernel getKernelTransposed(){
+		if(kernelTransposed == null)
+			kernelTransposed = transpose(kernel);
+
+		return kernelTransposed;
+	}
+
+	KernelNorm getNorm(){
 		return norm;
+	}
+
+	private Kernel transpose(final Kernel kernel){
+		final int width = kernel.getWidth();
+		final int height = kernel.getHeight();
+		final float[] array = kernel.getKernelData(null);
+		final float[] result = new float[array.length];
+		for(int i = 0; i < width; i ++)
+			for(int j = 0; j < height; j ++)
+				result[j * width + i] = array[i * height + j];
+		return new Kernel(height, width, result);
 	}
 
 }

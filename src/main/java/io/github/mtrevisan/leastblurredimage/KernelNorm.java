@@ -41,7 +41,7 @@ enum KernelNorm{
 	MEAN(){
 		@Override
 		int compose(final int a, final int b){
-			return (a + b) >> 1;
+			return (Math.abs(a) + Math.abs(b)) >> 1;
 		}
 	};
 

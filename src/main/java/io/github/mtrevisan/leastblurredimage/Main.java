@@ -57,6 +57,9 @@ public final class Main{
 	private static final String PARAM_KERNEL = "kernel";
 	private static final String PARAM_OUTPUT = "output";
 
+	private static final BlurKernel BLUR_KERNEL_DEFAULT = BlurKernel.SOBEL_FIELDMANN;
+
+
 	private static final ImageService IMAGE_SERVICE = ImageService.getInstance();
 
 
@@ -70,10 +73,10 @@ public final class Main{
 		try{
 			final CommandLine cmdLine = cmdLineParser.parse(options, args);
 			final File inputFolder = extractParamFolder(cmdLine);
-			final Kernel kernel = extractParamKernel(cmdLine);
+			final BlurKernel blurKernel = extractParamKernel(cmdLine);
 			final File outputFolder = extractParamOutput(cmdLine);
 
-			process(inputFolder, kernel, outputFolder);
+			process(inputFolder, blurKernel, outputFolder);
 		}
 		catch(final ParseException e){
 			System.out.println(e.getMessage());
@@ -90,7 +93,7 @@ public final class Main{
 		opt.setRequired(true);
 		options.addOption(opt);
 
-		opt = new Option("k", PARAM_KERNEL, true, "kernel type, one of " + Arrays.asList(Kernel.values()));
+		opt = new Option("k", PARAM_KERNEL, true, "kernel type, one of " + Arrays.asList(BlurKernel.values()));
 		options.addOption(opt);
 
 		opt = new Option("o", PARAM_OUTPUT, true, "output folder, where the best image is moved into");
@@ -107,19 +110,19 @@ public final class Main{
 		return folder;
 	}
 
-	private static Kernel extractParamKernel(final CommandLine cmdLine){
-		Kernel kernel = Kernel.BRENNER;
+	private static BlurKernel extractParamKernel(final CommandLine cmdLine){
+		BlurKernel blurKernel = BLUR_KERNEL_DEFAULT;
 		if(cmdLine.hasOption(PARAM_KERNEL)){
 			try{
-				kernel = Kernel.valueOf(cmdLine.getOptionValue(PARAM_KERNEL));
+				blurKernel = BlurKernel.valueOf(cmdLine.getOptionValue(PARAM_KERNEL));
 			}
 			catch(final Exception ignored){
-				System.out.println("invalid kernel type, should be one of " + Arrays.asList(Kernel.values()));
+				System.out.println("invalid kernel type, should be one of " + Arrays.asList(BlurKernel.values()));
 
 				System.exit(ERROR_INVALID_KERNEL);
 			}
 		}
-		return kernel;
+		return blurKernel;
 	}
 
 	private static File extractParamOutput(final CommandLine cmdLine){
@@ -129,7 +132,7 @@ public final class Main{
 		return output;
 	}
 
-	private static void process(final File inputFolder, final Kernel kernel, final File outputFolder){
+	private static void process(final File inputFolder, final BlurKernel blurKernel, final File outputFolder){
 		final File[] files = inputFolder.listFiles();
 		if(files == null || files.length == 0){
 			System.out.println("no images to load");
@@ -137,7 +140,7 @@ public final class Main{
 			System.exit(0);
 		}
 
-		System.out.println("kernel is " + kernel);
+		System.out.println("kernel is " + blurKernel);
 		System.out.println("loading images...");
 
 		File leastBlurredImage = null;
@@ -148,23 +151,20 @@ public final class Main{
 			if(file.isDirectory() || !file.exists())
 				continue;
 
-			final BufferedImage image = IMAGE_SERVICE.readImage(file);
+			BufferedImage image = IMAGE_SERVICE.readImage(file);
 			if(image == null)
 				continue;
 
 			System.out.print("loaded ");
 			System.out.print(file.getName());
 
-			//put grayscaled image into the map
-			final int width = image.getWidth(null);
-			final int height = image.getHeight(null);
-			final BufferedImage grayscaledImage = IMAGE_SERVICE.grayscaledImage(image, width, height);
+			image = IMAGE_SERVICE.grayscaled(image);
 
-			final int[] pixels = IMAGE_SERVICE.getPixels(grayscaledImage, width, height);
-			final int imageType = grayscaledImage.getType();
-			final int[] convolutedPixels = IMAGE_SERVICE.convolute(pixels, width, height, imageType, kernel);
+			image = IMAGE_SERVICE.equalizeHistogram(image);
 
-			final double variance = IMAGE_SERVICE.calculateVariance(convolutedPixels);
+			image = IMAGE_SERVICE.convolve(image, blurKernel);
+
+			final double variance = IMAGE_SERVICE.variance(image);
 
 			if(variance > maximumVariance){
 				maximumVariance = variance;
