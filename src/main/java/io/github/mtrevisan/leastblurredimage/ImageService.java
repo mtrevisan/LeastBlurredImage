@@ -46,9 +46,6 @@ final class ImageService{
 	}
 
 
-	private final MeanVarianceSampler varianceSampler = new MeanVarianceSampler();
-
-
 	private ImageService(){}
 
 	BufferedImage readImage(final File file){
@@ -172,11 +169,23 @@ final class ImageService{
 	}
 
 	double calculateVariance(final int[] pixels){
-		varianceSampler.reset();
+		final double mean = calculateMean(pixels);
+
+		double variance = 0.;
+		final int length = pixels.length;
+		for(int i = 0; i < length; i ++){
+			final double tmp = pixels[i] - mean;
+			variance += tmp * tmp;
+		}
+		return variance / (length - 1);
+	}
+
+	private double calculateMean(final int[] pixels){
+		double mean = 0.;
 		final int length = pixels.length;
 		for(int i = 0; i < length; i ++)
-			varianceSampler.add(pixels[i]);
-		return varianceSampler.getVarianceUnbiased();
+			mean += pixels[i];
+		return mean / length;
 	}
 
 }
