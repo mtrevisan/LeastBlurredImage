@@ -109,14 +109,11 @@ final class ImageService{
 	}
 
 	private int[] convolute(final int[] pixels, final int width, final int height, final int imageType, final int[][] kernel){
-		final int kernelWidth = kernel.length;
-		final int kernelHeight = kernel[0].length;
-
 		//histogram equalization
-		final int[] equalizedPixels = histogramEqualized(pixels, imageType);
+		histogramEqualized(pixels, imageType);
 
-		final int halfKernelWidth = (kernelWidth - 1) >> 1;
-		final int halfKernelHeight = (kernelHeight - 1) >> 1;
+		final int halfKernelWidth = (kernel.length - 1) >> 1;
+		final int halfKernelHeight = (kernel[0].length - 1) >> 1;
 		//apply the convolution
 		final int[] destinationPixels = new int[pixels.length - width * halfKernelWidth - height * halfKernelHeight];
 		//NOTE: ignore first and last rows to avoid going out of range
@@ -125,7 +122,7 @@ final class ImageService{
 				double value = 0.;
 				for(int u = -halfKernelWidth; u <= halfKernelWidth; u ++){
 					for(int v = -halfKernelHeight; v <= halfKernelHeight; v ++)
-						value += equalizedPixels[(i + u) * width + (j + v)] * kernel[u + halfKernelWidth][v + halfKernelHeight];
+						value += pixels[(i + u) * width + (j + v)] * kernel[u + halfKernelWidth][v + halfKernelHeight];
 				}
 
 				destinationPixels[(i - halfKernelWidth) * (width - halfKernelWidth) + (j - halfKernelHeight)] = (int)value;
@@ -133,23 +130,24 @@ final class ImageService{
 		return destinationPixels;
 	}
 
-	private int[] histogramEqualized(final int[] pixels, final int imageType){
+	private void histogramEqualized(final int[] pixels, final int imageType){
 		final int length = pixels.length;
-		final int[] histogram = getHistogram(pixels, imageType);
+		final double[] histogram = getHistogram(pixels, imageType);
 
-		final int histogramLength = histogram.length;
-		final double[] scaledHistogram = new double[histogramLength];
-		scaledHistogram[0] = histogram[0];
-		for(int i = 1; i < histogramLength; i ++)
-			scaledHistogram[i] = scaledHistogram[i - 1] + histogram[i];
-		final double tmp = (histogramLength - 1.) / length;
-		for(int i = 0; i < histogramLength; i ++)
-			scaledHistogram[i] *= tmp;
+		calculateCumulativeDistributionFunction(histogram, length);
 
-		final int[] equalizedPixels = new int[length];
 		for(int i = 0; i < length; i ++)
-			equalizedPixels[i] = (int)scaledHistogram[pixels[i]];
-		return equalizedPixels;
+			pixels[i] = (int)histogram[pixels[i]];
+	}
+
+	private void calculateCumulativeDistributionFunction(final double[] histogram, final int pixelCount){
+		final int histogramLength = histogram.length;
+		for(int i = 1; i < histogramLength; i ++)
+			histogram[i] = histogram[i - 1] + histogram[i];
+
+		final double tmp = (histogramLength - 1.) / pixelCount;
+		for(int i = 0; i < histogramLength; i ++)
+			histogram[i] *= tmp;
 	}
 
 	/**
@@ -157,8 +155,8 @@ final class ImageService{
 	 * The histogram is represented by an int array of 256 elements. Each element gives the number
 	 * of pixels in the image of the value equal to the index of the element.
 	 */
-	private int[] getHistogram(final int[] pixels, final int imageType){
-		final int[] histogram = new int[1 << (imageType == BufferedImage.TYPE_BYTE_GRAY? 8: 16)];
+	private double[] getHistogram(final int[] pixels, final int imageType){
+		final double[] histogram = new double[1 << (imageType == BufferedImage.TYPE_BYTE_GRAY? 8: 16)];
 		final int length = pixels.length;
 		for(int i = 0; i < length; i ++)
 			histogram[pixels[i]] ++;
