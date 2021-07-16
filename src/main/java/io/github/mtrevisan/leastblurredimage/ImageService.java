@@ -135,16 +135,20 @@ final class ImageService{
 
 	private int[] histogramEqualized(final int[] pixels, final int imageType){
 		final int length = pixels.length;
-		final int[] equalizedPixels = new int[length];
 		final int[] histogram = getHistogram(pixels, imageType);
-		final double tmp = 255. / length;
-		for(int i = 0; i < length; i ++){
-			int sum = 0;
-			for(int k = 0; k < pixels[i]; k ++)
-				sum += histogram[k];
 
-			equalizedPixels[i] = (int)(sum * tmp);
-		}
+		final int histogramLength = histogram.length;
+		final double[] scaledHistogram = new double[histogramLength];
+		scaledHistogram[0] = histogram[0];
+		for(int i = 1; i < histogramLength; i ++)
+			scaledHistogram[i] = scaledHistogram[i - 1] + histogram[i];
+		final double tmp = (histogramLength - 1.) / length;
+		for(int i = 0; i < histogramLength; i ++)
+			scaledHistogram[i] *= tmp;
+
+		final int[] equalizedPixels = new int[length];
+		for(int i = 0; i < length; i ++)
+			equalizedPixels[i] = (int)scaledHistogram[pixels[i]];
 		return equalizedPixels;
 	}
 
