@@ -24,8 +24,17 @@
  */
 package io.github.mtrevisan.leastblurredimage;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.Arrays;
 
 
 //https://www.pyimagesearch.com/2015/09/07/blur-detection-with-opencv/
@@ -34,59 +43,121 @@ import java.io.File;
 //https://www.programmersought.com/article/6056166465/
 public final class Main{
 
+	private static final int ERROR_GENERIC = 1;
+	private static final int ERROR_INPUT_NOT_FOLDER = 2;
+	private static final int ERROR_INVALID_KERNEL = 3;
+
+	private static final String PARAM_FOLDER = "folder";
+	private static final String PARAM_KERNEL = "kernel";
+
 	private static final ImageService IMAGE_SERVICE = ImageService.getInstance();
 
 
 	private Main(){}
 
 	public static void main(final String[] args){
+		final Options options = new Options();
+		defineOptions(options);
+
+		final CommandLineParser cmdLineParser = new DefaultParser();
+		try{
+			final CommandLine cmdLine = cmdLineParser.parse(options, args);
+			final File folder = extractParamFolder(cmdLine);
+			final Kernel kernel = extractParamKernel(cmdLine);
+
+			process(folder, kernel);
+		}
+		catch(final ParseException e){
+			System.out.println(e.getMessage());
+
+			final HelpFormatter formatter = new HelpFormatter();
+			formatter.printHelp("LeastBlurredImage", options);
+
+			System.exit(ERROR_GENERIC);
+		}
+	}
+
+	private static void defineOptions(final Options options) throws IllegalArgumentException{
+		Option opt = new Option("f", PARAM_FOLDER, true, "folder from which to upload the images");
+		opt.setRequired(true);
+		options.addOption(opt);
+
+		opt = new Option("k", PARAM_KERNEL, true, "kernel type, one of " + Arrays.asList(Kernel.values()));
+		options.addOption(opt);
+	}
+
+	private static File extractParamFolder(final CommandLine cmdLine){
+		final String folderPath = cmdLine.getOptionValue(PARAM_FOLDER);
+		final File folder = new File(folderPath);
+		if(!folder.isDirectory()){
+			System.out.println("input `" + PARAM_FOLDER + "` is not a directory");
+
+			System.exit(ERROR_INPUT_NOT_FOLDER);
+		}
+		return folder;
+	}
+
+	private static Kernel extractParamKernel(final CommandLine cmdLine){
+		Kernel kernel = Kernel.BRENNER;
+		if(cmdLine.hasOption(PARAM_KERNEL)){
+			try{
+				kernel = Kernel.valueOf(cmdLine.getOptionValue(PARAM_KERNEL));
+			}
+			catch(final Exception ignored){
+				System.out.println("invalid kernel type, should be one of " + Arrays.asList(Kernel.values()));
+
+				System.exit(ERROR_INVALID_KERNEL);
+			}
+		}
+		return kernel;
+	}
+
+	private static void process(final File folder, final Kernel kernel){
+		final File[] files = folder.listFiles();
+		if(files == null){
+			System.out.println("no images to load");
+
+			System.exit(0);
+		}
+
+		System.out.println("kernel is " + kernel);
 		System.out.println("loading images...");
 
-		final File folder = new File(args[0]);
-		if(folder.isDirectory()){
-			String leastBlurredImageName = null;
-			double maximumVariance = 0.;
+		String leastBlurredImageName = null;
+		double maximumVariance = 0.;
 
-			final File[] files = folder.listFiles();
-			if(files != null)
-				for(final File file : files){
-					final BufferedImage image = IMAGE_SERVICE.readImage(file);
+		for(final File file : files){
+			final BufferedImage image = IMAGE_SERVICE.readImage(file);
 
-					if(image != null){
-						final String imageName = file.getName();
-						System.out.print("loaded " + imageName);
+			if(image != null){
+				final String imageName = file.getName();
+				System.out.print("loaded ");
+				System.out.print(imageName);
 
-						//put grayscaled image into the map
-						final int width = image.getWidth(null);
-						final int height = image.getHeight(null);
-						final BufferedImage grayscaledImage = IMAGE_SERVICE.grayscaledImage(image, width, height);
+				//put grayscaled image into the map
+				final int width = image.getWidth(null);
+				final int height = image.getHeight(null);
+				final BufferedImage grayscaledImage = IMAGE_SERVICE.grayscaledImage(image, width, height);
 
-						final int[] pixels = IMAGE_SERVICE.getPixels(grayscaledImage, width, height);
-						final int imageType = grayscaledImage.getType();
-//						final Kernel kernel = Kernel.LAPLACE;
-//						final Kernel kernel = Kernel.LAPLACIAN_GRADIENT;
-//						final Kernel kernel = Kernel.SOBEL_TENENGRAD;
-//						final Kernel kernel = Kernel.SOBEL_FIELDMANN;
-//						final Kernel kernel = Kernel.SCHARR;
-//						final Kernel kernel = Kernel.GRADIENT;
-						final Kernel kernel = Kernel.BRENNER;
-						final int[] convolutedPixels = IMAGE_SERVICE.convolute(pixels, width, height, imageType, kernel);
+				final int[] pixels = IMAGE_SERVICE.getPixels(grayscaledImage, width, height);
+				final int imageType = grayscaledImage.getType();
+				final int[] convolutedPixels = IMAGE_SERVICE.convolute(pixels, width, height, imageType, kernel);
 
-						final double variance = IMAGE_SERVICE.calculateVariance(convolutedPixels);
+				final double variance = IMAGE_SERVICE.calculateVariance(convolutedPixels);
 
-						System.out.print("\t-> " + variance);
+				System.out.print("\t-> ");
+				System.out.print(variance);
 
-						if(variance > maximumVariance){
-							maximumVariance = variance;
-							leastBlurredImageName = imageName;
-						}
-
-						System.out.println();
-					}
+				if(variance > maximumVariance){
+					maximumVariance = variance;
+					leastBlurredImageName = imageName;
 				}
 
-			System.out.println("least blurred is " + leastBlurredImageName);
+				System.out.println();
+			}
 		}
+
+		System.out.println("least blurred is " + leastBlurredImageName);
 	}
 
 }

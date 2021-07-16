@@ -25,7 +25,7 @@
 package io.github.mtrevisan.leastblurredimage;
 
 
-public enum KernelNorm{
+enum KernelNorm{
 	NONE(){
 		@Override
 		int compose(final int a, final int b){
