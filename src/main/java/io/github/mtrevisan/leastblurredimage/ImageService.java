@@ -45,12 +45,13 @@ final class ImageService{
 		return SingletonHelper.INSTANCE;
 	}
 
+
+	private final MeanVarianceSampler varianceSampler = new MeanVarianceSampler();
+
+
 	private ImageService(){}
 
 	BufferedImage readImage(final File file){
-		if(!file.exists())
-			throw new IllegalArgumentException("File `" + file.getName() + "` does not exists.");
-
 		try(final ImageInputStream input = ImageIO.createImageInputStream(file)){
 			final Iterator<ImageReader> readers = ImageIO.getImageReaders(input);
 			if(readers.hasNext()){
@@ -64,7 +65,7 @@ final class ImageService{
 				}
 			}
 		}
-		catch(final IOException e){
+		catch(final IOException ignored){
 //			e.printStackTrace();
 		}
 //		throw new IllegalArgumentException("No reader for " + file);
@@ -171,25 +172,11 @@ final class ImageService{
 	}
 
 	double calculateVariance(final int[] pixels){
-		final double mean = calculateMean(pixels);
-
-		double variance = 0.;
-		final int length = pixels.length;
-		for(int i = 0; i < length; i ++){
-			final double tmp = pixels[i] - mean;
-			variance += tmp * tmp;
-		}
-		variance /= length - 1.;
-		return variance;
-	}
-
-	private double calculateMean(final int[] pixels){
-		double mean = 0.;
+		varianceSampler.reset();
 		final int length = pixels.length;
 		for(int i = 0; i < length; i ++)
-			mean += pixels[i];
-		mean /= length;
-		return mean;
+			varianceSampler.add(pixels[i]);
+		return varianceSampler.getVarianceUnbiased();
 	}
 
 }

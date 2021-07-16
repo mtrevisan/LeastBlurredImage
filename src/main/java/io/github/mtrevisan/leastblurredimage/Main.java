@@ -34,6 +34,10 @@ import org.apache.commons.cli.ParseException;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Locale;
 
@@ -47,9 +51,11 @@ public final class Main{
 	private static final int ERROR_GENERIC = 1;
 	private static final int ERROR_INPUT_NOT_FOLDER = 2;
 	private static final int ERROR_INVALID_KERNEL = 3;
+	private static final int ERROR_CANNOT_MOVE = 4;
 
 	private static final String PARAM_FOLDER = "folder";
 	private static final String PARAM_KERNEL = "kernel";
+	private static final String PARAM_OUTPUT = "output";
 
 	private static final ImageService IMAGE_SERVICE = ImageService.getInstance();
 
@@ -63,10 +69,11 @@ public final class Main{
 		final CommandLineParser cmdLineParser = new DefaultParser();
 		try{
 			final CommandLine cmdLine = cmdLineParser.parse(options, args);
-			final File folder = extractParamFolder(cmdLine);
+			final File inputFolder = extractParamFolder(cmdLine);
 			final Kernel kernel = extractParamKernel(cmdLine);
+			final File outputFolder = extractParamOutput(cmdLine);
 
-			process(folder, kernel);
+			process(inputFolder, kernel, outputFolder);
 		}
 		catch(final ParseException e){
 			System.out.println(e.getMessage());
@@ -85,11 +92,13 @@ public final class Main{
 
 		opt = new Option("k", PARAM_KERNEL, true, "kernel type, one of " + Arrays.asList(Kernel.values()));
 		options.addOption(opt);
+
+		opt = new Option("o", PARAM_OUTPUT, true, "output folder, where the best image is moved into");
+		options.addOption(opt);
 	}
 
 	private static File extractParamFolder(final CommandLine cmdLine){
-		final String folderPath = cmdLine.getOptionValue(PARAM_FOLDER);
-		final File folder = new File(folderPath);
+		final File folder = new File(cmdLine.getOptionValue(PARAM_FOLDER));
 		if(!folder.isDirectory()){
 			System.out.println("input `" + PARAM_FOLDER + "` is not a directory");
 
@@ -113,9 +122,16 @@ public final class Main{
 		return kernel;
 	}
 
-	private static void process(final File folder, final Kernel kernel){
-		final File[] files = folder.listFiles();
-		if(files == null){
+	private static File extractParamOutput(final CommandLine cmdLine){
+		File output = null;
+		if(cmdLine.hasOption(PARAM_OUTPUT))
+			output = new File(cmdLine.getOptionValue(PARAM_OUTPUT));
+		return output;
+	}
+
+	private static void process(final File inputFolder, final Kernel kernel, final File outputFolder){
+		final File[] files = inputFolder.listFiles();
+		if(files == null || files.length == 0){
 			System.out.println("no images to load");
 
 			System.exit(0);
@@ -124,39 +140,66 @@ public final class Main{
 		System.out.println("kernel is " + kernel);
 		System.out.println("loading images...");
 
-		String leastBlurredImageName = null;
+		File leastBlurredImage = null;
 		double maximumVariance = 0.;
 
 		for(final File file : files){
+			//skip folders
+			if(file.isDirectory() || !file.exists())
+				continue;
+
 			final BufferedImage image = IMAGE_SERVICE.readImage(file);
+			if(image == null)
+				continue;
 
-			if(image != null){
-				final String imageName = file.getName();
-				System.out.print("loaded ");
-				System.out.print(imageName);
+			System.out.print("loaded ");
+			System.out.print(file.getName());
 
-				//put grayscaled image into the map
-				final int width = image.getWidth(null);
-				final int height = image.getHeight(null);
-				final BufferedImage grayscaledImage = IMAGE_SERVICE.grayscaledImage(image, width, height);
+			//put grayscaled image into the map
+			final int width = image.getWidth(null);
+			final int height = image.getHeight(null);
+			final BufferedImage grayscaledImage = IMAGE_SERVICE.grayscaledImage(image, width, height);
 
-				final int[] pixels = IMAGE_SERVICE.getPixels(grayscaledImage, width, height);
-				final int imageType = grayscaledImage.getType();
-				final int[] convolutedPixels = IMAGE_SERVICE.convolute(pixels, width, height, imageType, kernel);
+			final int[] pixels = IMAGE_SERVICE.getPixels(grayscaledImage, width, height);
+			final int imageType = grayscaledImage.getType();
+			final int[] convolutedPixels = IMAGE_SERVICE.convolute(pixels, width, height, imageType, kernel);
 
-				final double variance = IMAGE_SERVICE.calculateVariance(convolutedPixels);
+			final double variance = IMAGE_SERVICE.calculateVariance(convolutedPixels);
 
-				if(variance > maximumVariance){
-					maximumVariance = variance;
-					leastBlurredImageName = imageName;
-				}
-
-				System.out.print("\t-> ");
-				System.out.format(Locale.ENGLISH, "%.1f%n", variance);
+			if(variance > maximumVariance){
+				maximumVariance = variance;
+				leastBlurredImage = file;
 			}
+
+			System.out.print("\t-> ");
+			System.out.format(Locale.ENGLISH, "%.1f%n", variance);
 		}
 
-		System.out.println("least blurred is " + leastBlurredImageName);
+		System.out.println("least blurred is " + leastBlurredImage.getName());
+
+		moveImage(leastBlurredImage, outputFolder);
+	}
+
+	/**
+	 * Move file into output folder.
+	 *
+	 * @param image	Image to be moved.
+	 * @param outputFolder	Recipient folder or file.
+	 */
+	private static void moveImage(final File image, final File outputFolder){
+		if(outputFolder != null){
+			try{
+				Path output = outputFolder.toPath();
+				if(outputFolder.isDirectory())
+					output = output.resolve(image.getName());
+				Files.move(image.toPath(), output, StandardCopyOption.REPLACE_EXISTING);
+			}
+			catch(final IOException e){
+				System.out.println(e.getMessage());
+
+				System.exit(ERROR_CANNOT_MOVE);
+			}
+		}
 	}
 
 }
