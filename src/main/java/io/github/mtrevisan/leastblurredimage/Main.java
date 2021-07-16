@@ -35,6 +35,7 @@ import org.apache.commons.cli.ParseException;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Arrays;
+import java.util.Locale;
 
 
 //https://www.pyimagesearch.com/2015/09/07/blur-detection-with-opencv/
@@ -145,15 +146,13 @@ public final class Main{
 
 				final double variance = IMAGE_SERVICE.calculateVariance(convolutedPixels);
 
-				System.out.print("\t-> ");
-				System.out.print(variance);
-
 				if(variance > maximumVariance){
 					maximumVariance = variance;
 					leastBlurredImageName = imageName;
 				}
 
-				System.out.println();
+				System.out.print("\t-> ");
+				System.out.format(Locale.ENGLISH, "%.1f%n", variance);
 			}
 		}
 
