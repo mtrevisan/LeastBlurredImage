@@ -82,7 +82,7 @@ public final class Main{
 			System.out.println(e.getMessage());
 
 			final HelpFormatter formatter = new HelpFormatter();
-			formatter.printHelp("LeastBlurredImage", options);
+			formatter.printHelp("LeastBlurredImage [options]", options);
 
 			System.exit(ERROR_GENERIC);
 		}
