@@ -89,7 +89,7 @@ public final class Main{
 	}
 
 	private static void defineOptions(final Options options) throws IllegalArgumentException{
-		Option opt = new Option("f", PARAM_FOLDER, true, "folder from which to upload the images");
+		Option opt = new Option("f", PARAM_FOLDER, true, "folder from which to read the images");
 		opt.setRequired(true);
 		options.addOption(opt);
 
