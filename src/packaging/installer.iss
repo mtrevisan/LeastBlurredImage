@@ -24,7 +24,6 @@ LicenseFile=${project.basedir}\LICENSE
 PrivilegesRequiredOverridesAllowed=dialog
 OutputDir=${project.build.directory}\installer
 OutputBaseFilename="${app.name} ${project.version} Setup"
-SetupIconFile=${project.basedir}\app-icon.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
@@ -44,7 +43,3 @@ Source: "${project.build.directory}\${jvm.outputFolder}\*"; DestDir: "{app}"; Fl
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
-
-[Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
-

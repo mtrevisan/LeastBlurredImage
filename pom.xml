@@ -180,7 +180,7 @@
 				<version>${maven-replacer-plugin.version}</version>
 				<executions>
 					<execution>
-						<phase>prepare-package</phase>
+						<phase>process-resources</phase>
 						<goals>
 							<goal>replace</goal>
 						</goals>
@@ -385,24 +385,6 @@
 								<argument>/cmd=move</argument>
 								<argument>"${project.build.directory}/${jvm.temporaryFolder}"</argument>
 								<argument>/to="${project.build.directory}/${jvm.outputFolder}/app"</argument>
-							</arguments>
-						</configuration>
-					</execution>
-					<execution>
-						<id>include-last-resources-aids</id>
-						<phase>package</phase>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<configuration>
-							<executable>${project.basedir}/src/building/FastCopy/FastCopy.exe</executable>
-							<arguments>
-								<argument>/no_ui</argument>
-								<argument>/log=FALSE</argument>
-								<argument>/estimate=FALSE</argument>
-								<argument>/cmd=force_copy</argument>
-								<argument>"${project.basedir}/aids"</argument>
-								<argument>/to="${project.build.directory}/${jvm.outputFolder}/app/aids"</argument>
 							</arguments>
 						</configuration>
 					</execution>
