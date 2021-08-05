@@ -25,7 +25,7 @@
 package io.github.mtrevisan.leastblurredimage;
 
 
-public enum KernelNorm{
+enum KernelNorm{
 	NONE(){
 		@Override
 		int compose(final int a, final int b){
@@ -41,7 +41,7 @@ public enum KernelNorm{
 	MEAN(){
 		@Override
 		int compose(final int a, final int b){
-			return (a + b) >> 1;
+			return (Math.abs(a) + Math.abs(b)) >> 1;
 		}
 	};
 
