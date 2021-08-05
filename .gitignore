@@ -1,4 +1,4 @@
 .idea/
 *.iml
 target/
-src/building/FastCopy/FastCopy2.ini
+src/tools/FastCopy/FastCopy2.ini
