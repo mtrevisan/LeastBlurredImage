@@ -1,4 +1,4 @@
-HunLinter
+LeastBlurredImage
 ==========
 
 ![Java-16+](https://img.shields.io/badge/java-16%2B-orange.svg) [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
