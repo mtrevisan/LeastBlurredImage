@@ -155,7 +155,6 @@ public final class Main{
 			if(image == null)
 				continue;
 
-			System.out.print("loaded ");
 			System.out.print(file.getName());
 
 			image = IMAGE_SERVICE.grayscaled(image);
