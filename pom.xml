@@ -5,7 +5,7 @@
 
 	<groupId>io.github.mtrevisan</groupId>
 	<artifactId>least-blurred-image</artifactId>
-	<version>1.0.1</version>
+	<version>1.0.1-SNAPSHOT</version>
 
 	<packaging>jar</packaging>
 
@@ -259,7 +259,6 @@
 <!--				</executions>-->
 <!--			</plugin>-->
 			<!-- Assembly / Make fat jar -->
-			<!-- mvn clean deploy -U -Dmaven.test.skip=true -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
@@ -400,7 +399,7 @@
 						</goals>
 						<configuration>
 							<workingDirectory>${project.build.directory}</workingDirectory>
-							<executable>iscc.exe</executable>
+							<executable>C:/Program Files (x86)/Inno Setup 6/iscc.exe</executable>
 							<arguments>
 								<argument>/Q</argument>
 								<argument>${project.build.directory}/packaging/installer.iss</argument>
