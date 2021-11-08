@@ -5,7 +5,7 @@
 
 	<groupId>io.github.mtrevisan</groupId>
 	<artifactId>least-blurred-image</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1</version>
 
 	<packaging>jar</packaging>
 
@@ -64,21 +64,33 @@
 		<app.copyright>(c) 2021 Mauro Trevisan</app.copyright>
 
 		<!-- Profiles & Build -->
-		<maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
+		<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-gpg-plugin -->
+		<maven-gpg-plugin.version>3.0.1</maven-gpg-plugin.version>
+		<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-deploy-plugin -->
 		<maven-deploy-plugin.version>2.8.2</maven-deploy-plugin.version>
+		<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-source-plugin -->
 		<maven-source-plugin.version>3.2.1</maven-source-plugin.version>
-		<maven-javadoc-plugin.version>3.2.0</maven-javadoc-plugin.version>
+		<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-javadoc-plugin -->
+		<maven-javadoc-plugin.version>3.3.1</maven-javadoc-plugin.version>
+		<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
 		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+		<!-- https://code.google.com/archive/p/maven-replacer-plugin/ -->
 		<maven-replacer-plugin.version>1.5.3</maven-replacer-plugin.version>
-<!--		<maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>-->
+		<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-shade-plugin -->
+<!--		<maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>-->
+		<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-assembly-plugin -->
 		<maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
+		<!-- https://mvnrepository.com/artifact/org.codehaus.mojo/exec-maven-plugin -->
 		<exec-maven-plugin.version>3.0.0</exec-maven-plugin.version>
+		<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-install-plugin -->
 		<maven-install-plugin.version>2.5.2</maven-install-plugin.version>
 
 		<!-- Apache -->
+		<!-- https://mvnrepository.com/artifact/commons-cli/commons-cli -->
 		<apache.commons-cli.version>1.4</apache.commons-cli.version>
 
 		<!-- TwelveMonkeys ImageIO -->
+		<!-- https://mvnrepository.com/artifact/com.twelvemonkeys.imageio/imageio-core -->
 		<twelvemonkeys.imageio-core.version>3.7.0</twelvemonkeys.imageio-core.version>
 	</properties>
 
@@ -98,7 +110,6 @@
 			<build>
 				<plugins>
 					<!-- Signing JAR Files -->
-					<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-gpg-plugin -->
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-gpg-plugin</artifactId>
@@ -114,14 +125,12 @@
 						</executions>
 					</plugin>
 					<!-- Deploy -->
-					<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-deploy-plugin -->
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-deploy-plugin</artifactId>
 						<version>${maven-deploy-plugin.version}</version>
 					</plugin>
 					<!-- Source -->
-					<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-source-plugin -->
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-source-plugin</artifactId>
@@ -136,7 +145,6 @@
 						</executions>
 					</plugin>
 					<!-- JavaDoc -->
-					<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-javadoc-plugin -->
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
@@ -162,7 +170,6 @@
 	<build>
 		<plugins>
 			<!-- Compiler -->
-			<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -198,7 +205,6 @@
 			</plugin>
 
 			<!-- Shade -->
-			<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-shade-plugin -->
 <!-- NOTE: shade 3.3.0 does not support java 16 yet! -->
 <!--			<plugin>-->
 <!--				<groupId>org.apache.maven.plugins</groupId>-->
@@ -253,7 +259,7 @@
 <!--				</executions>-->
 <!--			</plugin>-->
 			<!-- Assembly / Make fat jar -->
-			<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-assembly-plugin -->
+			<!-- mvn clean deploy -U -Dmaven.test.skip=true -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
@@ -304,7 +310,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- https://mvnrepository.com/artifact/org.codehaus.mojo/exec-maven-plugin -->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
@@ -415,7 +420,6 @@
 			</plugin>
 
 			<!-- Install -->
-			<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-install-plugin -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-install-plugin</artifactId>
@@ -447,7 +451,6 @@
 
 	<dependencies>
 		<!-- Apache -->
-		<!-- https://mvnrepository.com/artifact/commons-cli/commons-cli -->
 		<dependency>
 			<groupId>commons-cli</groupId>
 			<artifactId>commons-cli</artifactId>
@@ -455,7 +458,6 @@
 		</dependency>
 
 		<!-- TwelveMonkeys ImageIO -->
-		<!-- https://mvnrepository.com/artifact/com.twelvemonkeys.imageio/imageio-core -->
 		<dependency>
 			<groupId>com.twelvemonkeys.imageio</groupId>
 			<artifactId>imageio-core</artifactId>
