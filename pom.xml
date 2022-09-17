@@ -87,11 +87,11 @@
 
 		<!-- Apache -->
 		<!-- https://mvnrepository.com/artifact/commons-cli/commons-cli -->
-		<apache.commons-cli.version>1.4</apache.commons-cli.version>
+		<apache.commons-cli.version>1.5.0</apache.commons-cli.version>
 
 		<!-- TwelveMonkeys ImageIO -->
 		<!-- https://mvnrepository.com/artifact/com.twelvemonkeys.imageio/imageio-core -->
-		<twelvemonkeys.imageio-core.version>3.7.0</twelvemonkeys.imageio-core.version>
+		<twelvemonkeys.imageio-core.version>3.8.3</twelvemonkeys.imageio-core.version>
 	</properties>
 
 	<profiles>
